@@ -7,6 +7,15 @@ summary: GnuCash Double-Entry Accounting Program
 description: |
   GnuCash is a personal and small business double entry accounting application.
 icon: gui/gnucash-256x256.png
+website:
+  - https://www.gnucash.org/
+source-code:
+  - https://github.com/gnucash/gnucash.git
+  - https://github.com/lunacd/gnucash-snap
+issues:
+  - https://github.com/lunacd/gnucash-snap/issues
+contact:
+  - liu.haowen.andy@gmail.com
 
 grade: stable
 confinement: strict
