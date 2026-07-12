@@ -1,9 +1,12 @@
 name: lunacd-gnucash
+title: GnuCash
+license: GPL-2.0+
 base: core24
 version: '5.16'
 summary: GnuCash Double-Entry Accounting Program
 description: |
   GnuCash is a personal and small business double entry accounting application.
+icon: gui/gnucash-256x256.png
 
 grade: devel
 confinement: strict
@@ -64,10 +67,11 @@ parts:
       git am "${CRAFT_PROJECT_DIR}/patches/0002-Remove-development-version-warning.patch"
 
 apps:
-  lunacd-gnucash:
+  gnucash:
     command: usr/bin/gnucash
     extensions:
       - gnome
+    desktop: usr/share/applications/gnucash.desktop
     environment:
       GUILE_LOAD_PATH: "$SNAP/usr/share/guile/3.0:$SNAP/usr/share/guile/site/3.0:$GUILE_LOAD_PATH"
       GUILE_LOAD_COMPILED_PATH: "$SNAP/usr/lib/x86_64-linux-gnu/guile/3.0/ccache:$GUILE_LOAD_COMPILED_PATH"
