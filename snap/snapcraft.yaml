@@ -1,0 +1,74 @@
+name: lunacd-gnucash
+base: core24
+version: '5.16'
+summary: GnuCash Double-Entry Accounting Program
+description: |
+  GnuCash is a personal and small business double entry accounting application.
+
+grade: devel
+confinement: strict
+
+parts:
+  gnucash:
+    plugin: cmake
+    source: https://github.com/gnucash/gnucash.git
+    source-type: git
+    source-tag: $SNAPCRAFT_PROJECT_VERSION
+    source-depth: 1
+    cmake-generator: Ninja
+    cmake-parameters:
+      - "-DCMAKE_BUILD_TYPE=Release"
+      - "--install-prefix /usr"
+      - "-DCMAKE_INSTALL_SYSCONFDIR=/usr/etc"
+    build-packages:
+      - guile-3.0-dev
+      - libaqbanking-dev
+      - libdbd-sqlite3
+      - libdbi-dev
+      - libboost-atomic-dev
+      - libboost-chrono-dev
+      - libboost-container-dev
+      - libboost-date-time-dev
+      - libboost-filesystem-dev
+      - libboost-locale-dev
+      - libboost-program-options-dev
+      - libboost-regex-dev
+      - libboost-thread-dev
+      - libfinance-quote-perl
+      - libgtest-dev
+      - libgwenhywfar-core-dev
+      - libgwengui-gtk3-dev
+      - libofx-dev
+      - libxslt-dev
+      - swig
+      - xsltproc
+    stage-packages:
+      - guile-3.0-libs
+      - libaqbanking44
+      - libboost-locale1.83.0
+      - libboost-filesystem1.83.0
+      - libboost-program-options1.83.0
+      - libdbi1t64
+      - libdbd-sqlite3
+      - libfinance-quote-perl
+      - libgwengui-gtk3-79t64
+      - libgwenhywfar79t64
+      - libofx7t64
+      - libosp5
+      - libxmlsec1t64
+    build-environment:
+      - PERL5LIB:  "$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/perl-base/:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/perl5/5.38/:$SNAP/usr/share/perl5/:$SNAP/usr/share/perl/5.38.2/:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/perl/5.38/:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/perl/5.38.2/"
+    override-pull: |
+      craftctl default
+      git am "${CRAFT_PROJECT_DIR}/patches/0001-Use-ORIGIN-in-RPATH.patch"
+      git am "${CRAFT_PROJECT_DIR}/patches/0002-Remove-development-version-warning.patch"
+
+apps:
+  lunacd-gnucash:
+    command: usr/bin/gnucash
+    extensions:
+      - gnome
+    environment:
+      GUILE_LOAD_PATH: "$SNAP/usr/share/guile/3.0:$SNAP/usr/share/guile/site/3.0:$GUILE_LOAD_PATH"
+      GUILE_LOAD_COMPILED_PATH: "$SNAP/usr/lib/x86_64-linux-gnu/guile/3.0/ccache:$GUILE_LOAD_COMPILED_PATH"
+      PERL5LIB:  "$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/perl-base/:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/perl5/5.38/:$SNAP/usr/share/perl5/:$SNAP/usr/share/perl/5.38.2/:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/perl/5.38/:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/perl/5.38.2/"

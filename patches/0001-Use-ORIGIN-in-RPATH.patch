@@ -1,0 +1,615 @@
+From 61198842858fa885d85765f8e652e03c6b2610f9 Mon Sep 17 00:00:00 2001
+From: Haowen Liu <liu.haowen.andy@gmail.com>
+Date: Sat, 11 Jul 2026 12:00:54 -0400
+Subject: [PATCH 1/2] Use $ORIGIN in RPATH
+
+---
+ CMakeLists.txt                                 |  4 ----
+ bindings/guile/CMakeLists.txt                  | 12 ++++++++++++
+ bindings/python/CMakeLists.txt                 | 18 ++++++++++++++++++
+ gnucash/CMakeLists.txt                         |  6 ++++++
+ gnucash/gnome-search/CMakeLists.txt            |  6 ++++++
+ gnucash/gnome-utils/CMakeLists.txt             |  6 ++++++
+ gnucash/gnome/CMakeLists.txt                   |  6 ++++++
+ gnucash/html/CMakeLists.txt                    |  6 ++++++
+ gnucash/import-export/CMakeLists.txt           |  6 ++++++
+ gnucash/import-export/aqb/CMakeLists.txt       |  6 ++++++
+ gnucash/import-export/bi-import/CMakeLists.txt |  6 ++++++
+ gnucash/import-export/csv-exp/CMakeLists.txt   |  6 ++++++
+ gnucash/import-export/csv-imp/CMakeLists.txt   |  6 ++++++
+ .../customer-import/CMakeLists.txt             |  6 ++++++
+ .../import-export/log-replay/CMakeLists.txt    |  6 ++++++
+ gnucash/import-export/ofx/CMakeLists.txt       |  6 ++++++
+ gnucash/import-export/qif-imp/CMakeLists.txt   |  6 ++++++
+ gnucash/python/CMakeLists.txt                  |  7 +++++++
+ gnucash/register/ledger-core/CMakeLists.txt    |  6 ++++++
+ gnucash/register/register-core/CMakeLists.txt  |  6 ++++++
+ gnucash/register/register-gnome/CMakeLists.txt |  6 ++++++
+ gnucash/report/CMakeLists.txt                  |  6 ++++++
+ libgnucash/app-utils/CMakeLists.txt            | 12 ++++++++++++
+ libgnucash/backend/dbi/CMakeLists.txt          |  6 ++++++
+ libgnucash/backend/sql/CMakeLists.txt          |  6 ++++++
+ libgnucash/backend/xml/CMakeLists.txt          | 12 ++++++++++++
+ libgnucash/core-utils/CMakeLists.txt           |  6 ++++++
+ libgnucash/engine/CMakeLists.txt               |  6 ++++++
+ libgnucash/gnc-module/CMakeLists.txt           |  6 ++++++
+ libgnucash/tax/CMakeLists.txt                  |  6 ++++++
+ 30 files changed, 205 insertions(+), 4 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 06d29db494..635e0deeb8 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -695,10 +695,6 @@ if (APPLE AND WITH_GNUCASH)
+   set(CMAKE_INSTALL_NAME_DIR "${CMAKE_INSTALL_FULL_LIBDIR}")
+ endif()
+ 
+-if (UNIX)
+-  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR}:${CMAKE_INSTALL_FULL_LIBDIR}/gnucash")
+-endif()
+-
+ set(BUILD_SHARED_LIBS ON)
+ 
+ # Most libraries are installed to lib/gnucash, so set that as the default.
+diff --git a/bindings/guile/CMakeLists.txt b/bindings/guile/CMakeLists.txt
+index fc14fcd12c..b0cfb40a67 100644
+--- a/bindings/guile/CMakeLists.txt
++++ b/bindings/guile/CMakeLists.txt
+@@ -82,6 +82,12 @@ target_link_libraries(gnucash-guile
+         gnc-app-utils
+         PkgConfig::GLIB2)
+ 
++if (UNIX)
++  set_target_properties(gnucash-guile PROPERTIES INSTALL_RPATH
++    "$ORIGIN;$ORIGIN/gnucash"
++  )
++endif()
++
+ install(TARGETS gnucash-guile
+     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+@@ -103,6 +109,12 @@ target_link_libraries(gnc-expressions-guile
+         ${GUILE_LDFLAGS}
+         PkgConfig::GLIB2)
+ 
++if (UNIX)
++  set_target_properties(gnc-expressions-guile PROPERTIES INSTALL_RPATH
++    "$ORIGIN;$ORIGIN/gnucash"
++  )
++endif()
++
+ install(TARGETS gnc-expressions-guile
+         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+diff --git a/bindings/python/CMakeLists.txt b/bindings/python/CMakeLists.txt
+index d37d047fd0..e76358f08a 100644
+--- a/bindings/python/CMakeLists.txt
++++ b/bindings/python/CMakeLists.txt
+@@ -98,6 +98,12 @@ if(WITH_PYTHON)
+   add_dependencies(check sqlite3test)
+   set_tests_properties(sqlite3test PROPERTIES ENVIRONMENT "$<$<CONFIG:Asan>:;ASAN_OPTIONS=${ASAN_TEST_OPTIONS}>")
+ 
++  if (UNIX)
++    set_target_properties(gnucash_core_c PROPERTIES
++      INSTALL_RPATH "$ORIGIN/.." "$ORIGIN"
++    )
++  endif()
++
+   install(TARGETS gnucash_core_c
+     LIBRARY DESTINATION ${PYTHON_SYSCONFIG_OUTPUT}/gnucash
+     ARCHIVE DESTINATION ${PYTHON_SYSCONFIG_OUTPUT}/gnucash
+@@ -140,6 +146,12 @@ if(WITH_PYTHON)
+     set_target_properties (sw_core_utils PROPERTIES INSTALL_NAME_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/gnucash")
+   endif()
+ 
++  if (UNIX)
++    set_target_properties(sw_core_utils PROPERTIES INSTALL_RPATH
++      "$ORIGIN/..;$ORIGIN"
++    )
++  endif()
++
+   install(TARGETS sw_core_utils
+     LIBRARY DESTINATION ${PYTHON_SYSCONFIG_OUTPUT}/gnucash
+     ARCHIVE DESTINATION ${PYTHON_SYSCONFIG_OUTPUT}/gnucash
+@@ -177,6 +189,12 @@ if(WITH_PYTHON)
+     set_target_properties (sw_app_utils PROPERTIES INSTALL_NAME_DIR "${CMAKE_INSTALL_FULL_LIBDIR}")
+   endif()
+ 
++  if (UNIX)
++    set_target_properties(sw_app_utils PROPERTIES INSTALL_RPATH
++      "$ORIGIN/..;$ORIGIN"
++    )
++  endif()
++
+   install(TARGETS sw_app_utils
+           LIBRARY DESTINATION ${PYTHON_SYSCONFIG_OUTPUT}/gnucash
+           ARCHIVE DESTINATION ${PYTHON_SYSCONFIG_OUTPUT}/gnucash
+diff --git a/gnucash/CMakeLists.txt b/gnucash/CMakeLists.txt
+index 731ad4adf0..7a1b39bd95 100644
+--- a/gnucash/CMakeLists.txt
++++ b/gnucash/CMakeLists.txt
+@@ -165,6 +165,12 @@ if (COVERAGE AND LCOV_VERSION VERSION_GREATER_EQUAL "2.0")
+   add_coverage_target(gnucash-cli)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnucash gnucash-cli PROPERTIES INSTALL_RPATH
++    "$ORIGIN/../lib/${CMAKE_LIBRARY_ARCHITECTURE};$ORIGIN/../lib/${CMAKE_LIBRARY_ARCHITECTURE}/gnucash"
++  )
++endif()
++
+ install(TARGETS gnucash gnucash-cli DESTINATION ${CMAKE_INSTALL_BINDIR})
+ # No headers to install.
+ 
+diff --git a/gnucash/gnome-search/CMakeLists.txt b/gnucash/gnome-search/CMakeLists.txt
+index e945bf1665..e1e729fc49 100644
+--- a/gnucash/gnome-search/CMakeLists.txt
++++ b/gnucash/gnome-search/CMakeLists.txt
+@@ -59,6 +59,12 @@ if (COVERAGE)
+   add_coverage_target(gnc-gnome-search)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-gnome-search PROPERTIES INSTALL_RPATH
++    "$ORIGIN/..;$ORIGIN"
++  )
++endif()
++
+ install(TARGETS gnc-gnome-search
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+diff --git a/gnucash/gnome-utils/CMakeLists.txt b/gnucash/gnome-utils/CMakeLists.txt
+index a6908d3c55..7d213db438 100644
+--- a/gnucash/gnome-utils/CMakeLists.txt
++++ b/gnucash/gnome-utils/CMakeLists.txt
+@@ -242,6 +242,12 @@ if (APPLE)
+   set_target_properties (gnc-gnome-utils PROPERTIES INSTALL_NAME_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/gnucash")
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-gnome-utils PROPERTIES INSTALL_RPATH
++    "$ORIGIN/..;$ORIGIN"
++  )
++endif()
++
+ install(TARGETS gnc-gnome-utils
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+diff --git a/gnucash/gnome/CMakeLists.txt b/gnucash/gnome/CMakeLists.txt
+index 2e0ff04247..62d99865e8 100644
+--- a/gnucash/gnome/CMakeLists.txt
++++ b/gnucash/gnome/CMakeLists.txt
+@@ -171,6 +171,12 @@ if (COVERAGE)
+   add_coverage_target(gnc-gnome)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-gnome PROPERTIES INSTALL_RPATH
++    "$ORIGIN;$ORIGIN/gnucash"
++  )
++endif()
++
+ install(TARGETS gnc-gnome
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+diff --git a/gnucash/html/CMakeLists.txt b/gnucash/html/CMakeLists.txt
+index 197bee7dec..5c278ef7b8 100644
+--- a/gnucash/html/CMakeLists.txt
++++ b/gnucash/html/CMakeLists.txt
+@@ -80,6 +80,12 @@ if (COVERAGE)
+   add_coverage_target(gnc-html)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-html PROPERTIES INSTALL_RPATH
++    "$ORIGIN/..;$ORIGIN"
++  )
++endif()
++
+ install(TARGETS gnc-html
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+diff --git a/gnucash/import-export/CMakeLists.txt b/gnucash/import-export/CMakeLists.txt
+index b7b7cf0ea7..e6e999a12f 100644
+--- a/gnucash/import-export/CMakeLists.txt
++++ b/gnucash/import-export/CMakeLists.txt
+@@ -64,6 +64,12 @@ if (COVERAGE)
+   add_coverage_target(gnc-generic-import)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-generic-import PROPERTIES INSTALL_RPATH
++    "$ORIGIN;$ORIGIN/gnucash"
++  )
++endif()
++
+ install(TARGETS gnc-generic-import
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+diff --git a/gnucash/import-export/aqb/CMakeLists.txt b/gnucash/import-export/aqb/CMakeLists.txt
+index 662638a849..0edacbad3d 100644
+--- a/gnucash/import-export/aqb/CMakeLists.txt
++++ b/gnucash/import-export/aqb/CMakeLists.txt
+@@ -85,6 +85,12 @@ if(WITH_AQBANKING)
+     add_coverage_target(gncmod-aqbanking)
+   endif()
+ 
++  if (UNIX)
++    set_target_properties(gncmod-aqbanking PROPERTIES INSTALL_RPATH
++      "$ORIGIN/..;$ORIGIN"
++    )
++  endif()
++
+   install(TARGETS gncmod-aqbanking
+     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+diff --git a/gnucash/import-export/bi-import/CMakeLists.txt b/gnucash/import-export/bi-import/CMakeLists.txt
+index 54839a65bb..ff1f0edd2a 100644
+--- a/gnucash/import-export/bi-import/CMakeLists.txt
++++ b/gnucash/import-export/bi-import/CMakeLists.txt
+@@ -41,6 +41,12 @@ if (COVERAGE AND LCOV_VERSION VERSION_GREATER_EQUAL "2.0")
+   add_coverage_target(gnc-bi-import)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-bi-import PROPERTIES INSTALL_RPATH
++    "$ORIGIN/..;$ORIGIN"
++  )
++endif()
++
+ install(TARGETS gnc-bi-import
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+diff --git a/gnucash/import-export/csv-exp/CMakeLists.txt b/gnucash/import-export/csv-exp/CMakeLists.txt
+index 5ff28385d7..df6490a9bb 100644
+--- a/gnucash/import-export/csv-exp/CMakeLists.txt
++++ b/gnucash/import-export/csv-exp/CMakeLists.txt
+@@ -47,6 +47,12 @@ if (COVERAGE)
+   add_coverage_target(gnc-csv-export)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-csv-export PROPERTIES
++    INSTALL_RPATH "$ORIGIN/..;$ORIGIN"
++  )
++endif()
++
+ install(TARGETS gnc-csv-export
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+diff --git a/gnucash/import-export/csv-imp/CMakeLists.txt b/gnucash/import-export/csv-imp/CMakeLists.txt
+index 67add00860..5c0acaec55 100644
+--- a/gnucash/import-export/csv-imp/CMakeLists.txt
++++ b/gnucash/import-export/csv-imp/CMakeLists.txt
+@@ -88,6 +88,12 @@ if (COVERAGE)
+   add_coverage_target(gnc-csv-import)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-csv-import PROPERTIES INSTALL_RPATH
++    "$ORIGIN/..;$ORIGIN"
++  )
++endif()
++
+ install(TARGETS gnc-csv-import
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+diff --git a/gnucash/import-export/customer-import/CMakeLists.txt b/gnucash/import-export/customer-import/CMakeLists.txt
+index f0b2892c30..0fa84406cb 100644
+--- a/gnucash/import-export/customer-import/CMakeLists.txt
++++ b/gnucash/import-export/customer-import/CMakeLists.txt
+@@ -39,6 +39,12 @@ if (0 AND COVERAGE) # Generates no coverage data
+   add_coverage_target(gnc-customer-import)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-customer-import PROPERTIES
++    INSTALL_RPATH "$ORIGIN/..;$ORIGIN"
++  )
++endif()
++
+ install(TARGETS gnc-customer-import
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+diff --git a/gnucash/import-export/log-replay/CMakeLists.txt b/gnucash/import-export/log-replay/CMakeLists.txt
+index 12d35fecc7..661fccf616 100644
+--- a/gnucash/import-export/log-replay/CMakeLists.txt
++++ b/gnucash/import-export/log-replay/CMakeLists.txt
+@@ -36,6 +36,12 @@ if (COVERAGE AND LCOV_VERSION VERSION_GREATER_EQUAL "2.0")
+   add_coverage_target(gnc-log-replay)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-log-replay PROPERTIES INSTALL_RPATH
++    "$ORIGIN/..;$ORIGIN"
++  )
++endif()
++
+ install(TARGETS gnc-log-replay
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+diff --git a/gnucash/import-export/ofx/CMakeLists.txt b/gnucash/import-export/ofx/CMakeLists.txt
+index f5dace314a..2e09e32206 100644
+--- a/gnucash/import-export/ofx/CMakeLists.txt
++++ b/gnucash/import-export/ofx/CMakeLists.txt
+@@ -52,6 +52,12 @@ if (WITH_OFX)
+     add_coverage_target(gncmod-ofx)
+   endif()
+ 
++  if (UNIX)
++    set_target_properties(gncmod-ofx PROPERTIES INSTALL_RPATH
++      "$ORIGIN/..;$ORIGIN"
++    )
++  endif()
++
+   install(TARGETS gncmod-ofx
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+diff --git a/gnucash/import-export/qif-imp/CMakeLists.txt b/gnucash/import-export/qif-imp/CMakeLists.txt
+index ec4a6fa52f..3a9570a078 100644
+--- a/gnucash/import-export/qif-imp/CMakeLists.txt
++++ b/gnucash/import-export/qif-imp/CMakeLists.txt
+@@ -40,6 +40,12 @@ if (COVERAGE AND LCOV_VERSION VERSION_GREATER_EQUAL "2.0")
+   add_coverage_target(gnc-qif-import)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-qif-import PROPERTIES INSTALL_RPATH
++    "$ORIGIN/..;$ORIGIN"
++  )
++endif()
++
+ install(TARGETS gnc-qif-import
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+diff --git a/gnucash/python/CMakeLists.txt b/gnucash/python/CMakeLists.txt
+index 34fcd44dc3..c93f903442 100644
+--- a/gnucash/python/CMakeLists.txt
++++ b/gnucash/python/CMakeLists.txt
+@@ -22,6 +22,13 @@ if (WITH_PYTHON)
+ if (APPLE)
+   set_target_properties (gncmod-python PROPERTIES INSTALL_NAME_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/gnucash")
+ endif()
++
++  if (UNIX)
++    set_target_properties(gncmod-python PROPERTIES INSTALL_RPATH
++      "$ORIGIN/..;$ORIGIN"
++    )
++  endif()
++
+   install(TARGETS gncmod-python
+     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+diff --git a/gnucash/register/ledger-core/CMakeLists.txt b/gnucash/register/ledger-core/CMakeLists.txt
+index 7155e3e901..c187ccec73 100644
+--- a/gnucash/register/ledger-core/CMakeLists.txt
++++ b/gnucash/register/ledger-core/CMakeLists.txt
+@@ -60,6 +60,12 @@ if (COVERAGE)
+   add_coverage_target(gnc-ledger-core)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-ledger-core PROPERTIES INSTALL_RPATH
++    "$ORIGIN/..;$ORIGIN"
++  )
++endif()
++
+ install(TARGETS gnc-ledger-core
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+diff --git a/gnucash/register/register-core/CMakeLists.txt b/gnucash/register/register-core/CMakeLists.txt
+index a463a34244..108bcaa176 100644
+--- a/gnucash/register/register-core/CMakeLists.txt
++++ b/gnucash/register/register-core/CMakeLists.txt
+@@ -55,6 +55,12 @@ if (APPLE)
+   set_target_properties (gnc-register-core PROPERTIES INSTALL_NAME_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/gnucash")
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-register-core PROPERTIES INSTALL_RPATH
++    "$ORIGIN/..;$ORIGIN"
++  )
++endif()
++
+ install(TARGETS gnc-register-core
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+diff --git a/gnucash/register/register-gnome/CMakeLists.txt b/gnucash/register/register-gnome/CMakeLists.txt
+index 2960f85dfa..ead7de39cf 100644
+--- a/gnucash/register/register-gnome/CMakeLists.txt
++++ b/gnucash/register/register-gnome/CMakeLists.txt
+@@ -59,6 +59,12 @@ if (COVERAGE)
+   add_coverage_target(gnc-register-gnome)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-register-gnome PROPERTIES INSTALL_RPATH
++    "$ORIGIN/..;$ORIGIN"
++  )
++endif()
++
+ install(TARGETS gnc-register-gnome
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+diff --git a/gnucash/report/CMakeLists.txt b/gnucash/report/CMakeLists.txt
+index c70e13c561..a587cb1c45 100644
+--- a/gnucash/report/CMakeLists.txt
++++ b/gnucash/report/CMakeLists.txt
+@@ -47,6 +47,12 @@ if (COVERAGE)
+   add_coverage_target(gnc-report)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-report PROPERTIES INSTALL_RPATH
++    "$ORIGIN/..;$ORIGIN"
++  )
++endif()
++
+ install(TARGETS gnc-report
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+diff --git a/libgnucash/app-utils/CMakeLists.txt b/libgnucash/app-utils/CMakeLists.txt
+index 26476c3c76..ca4ead7973 100644
+--- a/libgnucash/app-utils/CMakeLists.txt
++++ b/libgnucash/app-utils/CMakeLists.txt
+@@ -90,6 +90,12 @@ if (COVERAGE)
+   add_coverage_target(gnc-app-utils)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-app-utils PROPERTIES INSTALL_RPATH
++    "$ORIGIN;$ORIGIN/gnucash"
++  )
++endif()
++
+ install (TARGETS gnc-app-utils
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+@@ -143,6 +149,12 @@ target_link_libraries(gnc-expressions
+         ${GUILE_LDFLAGS}
+         PkgConfig::GLIB2)
+ 
++if (UNIX)
++  set_target_properties(gnc-expressions PROPERTIES INSTALL_RPATH
++    "$ORIGIN;$ORIGIN/gnucash"
++  )
++endif()
++
+ install(TARGETS gnc-expressions
+         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+diff --git a/libgnucash/backend/dbi/CMakeLists.txt b/libgnucash/backend/dbi/CMakeLists.txt
+index ac6fe7058d..db88f3af3f 100644
+--- a/libgnucash/backend/dbi/CMakeLists.txt
++++ b/libgnucash/backend/dbi/CMakeLists.txt
+@@ -47,6 +47,12 @@ if (WITH_SQL)
+     add_coverage_target(gncmod-backend-dbi)
+   endif()
+ 
++  if (UNIX)
++    set_target_properties(gncmod-backend-dbi PROPERTIES INSTALL_RPATH
++      "$ORIGIN/..;$ORIGIN"
++    )
++  endif()
++
+   install(TARGETS gncmod-backend-dbi
+     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/gnucash
+diff --git a/libgnucash/backend/sql/CMakeLists.txt b/libgnucash/backend/sql/CMakeLists.txt
+index b197c39a1d..79e0b7e501 100644
+--- a/libgnucash/backend/sql/CMakeLists.txt
++++ b/libgnucash/backend/sql/CMakeLists.txt
+@@ -75,6 +75,12 @@ if(WITH_SQL)
+ 
+   target_include_directories(gnc-backend-sql PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+ 
++  if (UNIX)
++    set_target_properties(gnc-backend-sql PROPERTIES INSTALL_RPATH
++      "$ORIGIN;$ORIGIN/gnucash"
++    )
++  endif()
++
+   install(TARGETS gnc-backend-sql
+     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+diff --git a/libgnucash/backend/xml/CMakeLists.txt b/libgnucash/backend/xml/CMakeLists.txt
+index 69d38af1b8..0cf2850b36 100644
+--- a/libgnucash/backend/xml/CMakeLists.txt
++++ b/libgnucash/backend/xml/CMakeLists.txt
+@@ -92,6 +92,12 @@ target_include_directories (gnc-backend-xml-utils
+ 
+ target_compile_definitions (gnc-backend-xml-utils PRIVATE -DG_LOG_DOMAIN=\"gnc.backend.xml\" -DU_SHOW_CPLUSPLUS_API=0)
+ 
++if (UNIX)
++  set_target_properties(gnc-backend-xml-utils PROPERTIES INSTALL_RPATH
++    "$ORIGIN;$ORIGIN/gnucash"
++  )
++endif()
++
+ install(TARGETS gnc-backend-xml-utils
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+@@ -128,6 +134,12 @@ if (COVERAGE)
+   add_coverage_target(gncmod-backend-xml)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gncmod-backend-xml PROPERTIES INSTALL_RPATH
++    "$ORIGIN/..;$ORIGIN"
++  )
++endif()
++
+ install(TARGETS gncmod-backend-xml
+   LIBRARY DESTINATION ${LIB_DIR}
+   ARCHIVE DESTINATION ${LIB_DIR}
+diff --git a/libgnucash/core-utils/CMakeLists.txt b/libgnucash/core-utils/CMakeLists.txt
+index 21ce5acc08..5ec6acbfa3 100644
+--- a/libgnucash/core-utils/CMakeLists.txt
++++ b/libgnucash/core-utils/CMakeLists.txt
+@@ -70,6 +70,12 @@ target_compile_options(gnc-core-utils
+     PRIVATE
+         $<$<BOOL:${MAC_INTEGRATION}>:${OSX_EXTRA_COMPILE_FLAGS}>)
+ 
++if (UNIX)
++  set_target_properties(gnc-core-utils PROPERTIES INSTALL_RPATH
++    "$ORIGIN;$ORIGIN/gnucash"
++  )
++endif()
++
+ install(TARGETS gnc-core-utils
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+diff --git a/libgnucash/engine/CMakeLists.txt b/libgnucash/engine/CMakeLists.txt
+index 9bc5a18d54..136d3fd39a 100644
+--- a/libgnucash/engine/CMakeLists.txt
++++ b/libgnucash/engine/CMakeLists.txt
+@@ -266,6 +266,12 @@ if (COVERAGE)
+   add_coverage_target(gnc-engine)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-engine PROPERTIES INSTALL_RPATH
++    "$ORIGIN;$ORIGIN/gnucash"
++  )
++endif()
++
+ install(TARGETS gnc-engine
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+diff --git a/libgnucash/gnc-module/CMakeLists.txt b/libgnucash/gnc-module/CMakeLists.txt
+index b8e2e08eea..5f071a55a1 100644
+--- a/libgnucash/gnc-module/CMakeLists.txt
++++ b/libgnucash/gnc-module/CMakeLists.txt
+@@ -31,6 +31,12 @@ if (COVERAGE)
+   add_coverage_target(gnc-module)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-module PROPERTIES INSTALL_RPATH
++    "$ORIGIN;$ORIGIN/gnucash"
++  )
++endif()
++
+ install(TARGETS gnc-module
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+diff --git a/libgnucash/tax/CMakeLists.txt b/libgnucash/tax/CMakeLists.txt
+index fef9682dd6..e95adb2388 100644
+--- a/libgnucash/tax/CMakeLists.txt
++++ b/libgnucash/tax/CMakeLists.txt
+@@ -27,6 +27,12 @@ if (COVERAGE)
+   add_coverage_target(gnc-locale-tax)
+ endif()
+ 
++if (UNIX)
++  set_target_properties(gnc-locale-tax PROPERTIES INSTALL_RPATH
++    "$ORIGIN;$ORIGIN/gnucash"
++  )
++endif()
++
+ install(TARGETS gnc-locale-tax
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-- 
+2.53.0
+

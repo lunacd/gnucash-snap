@@ -1,0 +1,31 @@
+From 60f6b41acbed2886a60243f046ada4482bec1fbb Mon Sep 17 00:00:00 2001
+From: Haowen Liu <liu.haowen.andy@gmail.com>
+Date: Sat, 11 Jul 2026 17:28:07 -0400
+Subject: [PATCH 2/2] Remove development version warning
+
+---
+ gnucash/gnucash-core-app.cpp | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+diff --git a/gnucash/gnucash-core-app.cpp b/gnucash/gnucash-core-app.cpp
+index c9a3715c7d..7e5d116898 100644
+--- a/gnucash/gnucash-core-app.cpp
++++ b/gnucash/gnucash-core-app.cpp
+@@ -59,13 +59,8 @@ static QofLogModule log_module = GNC_MOD_GUI;
+ #include <locale.h>
+ #include <gnc-locale-utils.hpp>
+ 
+-/* GNC_VCS is defined whenever we're building from a git work tree */
+-#ifdef GNC_VCS
+-constexpr int is_development_version = TRUE;
+-#else
++/* Gnucash snap is built from git tag checkout */
+ constexpr int is_development_version = FALSE;
+-#define GNC_VCS ""
+-#endif
+ 
+ static gchar *userdata_migration_msg = NULL;
+ 
+-- 
+2.53.0
+
