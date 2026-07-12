@@ -76,3 +76,5 @@ apps:
       GUILE_LOAD_PATH: "$SNAP/usr/share/guile/3.0:$SNAP/usr/share/guile/site/3.0:$GUILE_LOAD_PATH"
       GUILE_LOAD_COMPILED_PATH: "$SNAP/usr/lib/x86_64-linux-gnu/guile/3.0/ccache:$GUILE_LOAD_COMPILED_PATH"
       PERL5LIB:  "$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/perl-base/:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/perl5/5.38/:$SNAP/usr/share/perl5/:$SNAP/usr/share/perl/5.38.2/:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/perl/5.38/:$SNAP/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/perl/5.38.2/"
+    plugs:
+      - home
