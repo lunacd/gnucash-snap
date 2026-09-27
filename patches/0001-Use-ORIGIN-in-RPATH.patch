@@ -1,4 +1,4 @@
-From 61198842858fa885d85765f8e652e03c6b2610f9 Mon Sep 17 00:00:00 2001
+From 27a09099aa312c0865fb365847622dadd0694a12 Mon Sep 17 00:00:00 2001
 From: Haowen Liu <liu.haowen.andy@gmail.com>
 Date: Sat, 11 Jul 2026 12:00:54 -0400
 Subject: [PATCH 1/2] Use $ORIGIN in RPATH
@@ -37,7 +37,7 @@ Subject: [PATCH 1/2] Use $ORIGIN in RPATH
  30 files changed, 205 insertions(+), 4 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 06d29db494..635e0deeb8 100644
+index bdb8bc9da3..0ef1e4359f 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -695,10 +695,6 @@ if (APPLE AND WITH_GNUCASH)
@@ -125,10 +125,10 @@ index d37d047fd0..e76358f08a 100644
            LIBRARY DESTINATION ${PYTHON_SYSCONFIG_OUTPUT}/gnucash
            ARCHIVE DESTINATION ${PYTHON_SYSCONFIG_OUTPUT}/gnucash
 diff --git a/gnucash/CMakeLists.txt b/gnucash/CMakeLists.txt
-index 731ad4adf0..7a1b39bd95 100644
+index 69259a0257..a3624672e5 100644
 --- a/gnucash/CMakeLists.txt
 +++ b/gnucash/CMakeLists.txt
-@@ -165,6 +165,12 @@ if (COVERAGE AND LCOV_VERSION VERSION_GREATER_EQUAL "2.0")
+@@ -167,6 +167,12 @@ if (COVERAGE AND LCOV_VERSION VERSION_GREATER_EQUAL "2.0")
    add_coverage_target(gnucash-cli)
  endif()
  

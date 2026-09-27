@@ -2,7 +2,7 @@ name: lunacd-gnucash
 title: GnuCash
 license: GPL-2.0+
 base: core24
-version: '5.16'
+version: '5.17'
 summary: GnuCash Double-Entry Accounting Program
 description: |
   GnuCash is a personal and small business double entry accounting application.
